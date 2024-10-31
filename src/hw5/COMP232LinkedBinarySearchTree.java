@@ -1,5 +1,7 @@
 package hw5;
 
+import java.util.NoSuchElementException;
+
 /**
  * Linked implementation of a binary search tree. The binary search tree
  * inherits the methods from the binary tree. The add and remove methods must
@@ -100,16 +102,36 @@ public class COMP232LinkedBinarySearchTree<K extends Comparable<K>, V> extends C
 	 * {@inheritDoc}
 	 */
 	public V get(K key) {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		if (getNode(root, key) == null) {
+			return null;
+		} else {
+			return getNode(root, key).value;
+		}
+	}
+
+	public BTNode<K, V> getNode(BTNode<K, V> subTreeRoot, K key) {
+		if (subTreeRoot == null) {
+			return null; 
+		} else if (subTreeRoot.key.equals(key)) {
+			return subTreeRoot; 
+		} else {
+			if (key.compareTo(subTreeRoot.key) > 0) {
+				return getNode(subTreeRoot.right, key);
+			}
+			return getNode(subTreeRoot.left, key);
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public void set(K key, V value) {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		BTNode<K, V> node = getNode(root, key);
+		if (node == null) {
+			throw new NoSuchElementException("No node with key: " + key);
+		} else {
+			node.value = value;
+		}
 	}
 
 	/**
@@ -171,7 +193,62 @@ public class COMP232LinkedBinarySearchTree<K extends Comparable<K>, V> extends C
 	 */
 	public V remove(K key) {
 		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		BTNode<K,V> ntr = getNode(root, key);
+		if (ntr == null) {
+			// node is not in the tree, done!
+			return null;
+		} else if (size == 1) {
+			// node is the root and only node in the tree.
+			V rootVal = root.value;
+			size = 0;
+			root = null;
+			return rootVal;
+		} else if (ntr.isLeaf()) {
+			// node is a leaf node
+			return removeHelper(ntr, null);
+		} else if (ntr.left != null && ntr.right != null) {
+			// node has 2 children
+			K kOfNts = smallestKeyLeftSubtree(ntr.right);
+			BTNode<K,V> nts = getNode(ntr, kOfNts);
+			return removeHelper(ntr, nts);
+		} else {
+			// node has 1 child 
+			if (ntr.left != null) {
+				return removeHelper(ntr, ntr.left);
+			} else {
+				return removeHelper(ntr, ntr.right);
+			}
+		}
+	}
+
+	public V removeHelper(BTNode<K,V> rmld, BTNode<K,V> nts) {
+		V removedValue = rmld.value;
+		if (nts == null) {
+			if (rmld.parent.left == rmld) { 
+				rmld.parent.left = null;
+			} else {
+				rmld.parent.right = null; 
+			}
+		} else {
+			rmld.key = nts.key;
+			rmld.value = nts.value;
+
+			if (nts.parent.left == nts) { 
+				nts.parent.left = null;
+			} else {
+				nts.parent.right = null; 
+			}
+		}
+		size--;
+		return removedValue;
+
+	}
+	public K smallestKeyLeftSubtree(BTNode<K,V> node) {
+		if (node.left == null && node.right == null) {
+			return node.key;
+		} else {
+			return smallestKeyLeftSubtree(node.left);
+		}
 	}
 
 	/*
