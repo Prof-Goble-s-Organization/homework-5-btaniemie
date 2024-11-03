@@ -1,5 +1,7 @@
 package hw5;
 
+import java.util.NoSuchElementException;
+
 /**
  * Implementation of the COMP232PriorityQueue interface that uses a binary 
  * heap with an array backing store. 
@@ -91,7 +93,24 @@ public class COMP232ArrayHeap<K extends Comparable<K>, V> implements COMP232Prio
          * node up the tree.
 	 * I recommend creating a helper function to assist with the percolation.
          */
-        throw new UnsupportedOperationException("Not yet implemented");
+        HeapNode<K,V> addedNode = new HeapNode<K,V>(key, value);
+        tree.add(addedNode);
+        percolateUp(tree.size() - 1);
+    }
+
+    private void percolateUp(int percolatingNodeIndex) {
+        if (percolatingNodeIndex == 0) {
+            return;
+        } else {
+            int parentIndex = getParentIndex(percolatingNodeIndex);
+            HeapNode<K, V> percNode = tree.get(percolatingNodeIndex);
+            HeapNode<K, V> parentNode = tree.get(parentIndex);
+
+            if (percNode.key.compareTo(parentNode.key) > 0) {
+                swap(percolatingNodeIndex, parentIndex);
+                percolateUp(parentIndex);
+            }
+        }
     }
 
     /**
@@ -206,7 +225,31 @@ public class COMP232ArrayHeap<K extends Comparable<K>, V> implements COMP232Prio
      */
     public void adjustPriority(V value, K newKey) {
         // Intentionally not implemented -- see homework assignment
-        throw new UnsupportedOperationException("Not yet implemented.");
+        if (tree.size() == 0) {
+            throw new IllegalStateException("Heap is empty");
+        }
+
+        int foundIndex = -1;
+
+        for (int i = 0; i < tree.size(); i++) {
+            if (tree.get(i).value.equals(value)) {
+                foundIndex = i;
+                break;
+            }
+        }
+
+        if (foundIndex == -1){
+            throw new NoSuchElementException("Node DNE");
+        }
+
+        HeapNode<K,V> node = tree.get(foundIndex);
+        node.key = newKey;
+
+        if (newKey.compareTo(node.key) < 0) {
+            percolateUp(foundIndex);
+        } else {
+            trickleDown(foundIndex);
+        }
 
         /*
          * Find the node with the value -- Hint: Just search through the array!
